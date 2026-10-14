@@ -1,0 +1,17 @@
+{
+  "generated_from": "curated-mvp",
+  "kind": "qwen3-onnx-source-set",
+  "schema": 1,
+  "sources": [
+    {
+      "license": "apache-2.0",
+      "repository": "wavekat/Qwen3-TTS-1.7B-VoiceDesign-ONNX",
+      "revision": "62c7863a68800d72bcee4f2931148c441571ace7"
+    },
+    {
+      "license": "apache-2.0",
+      "repository": "wavekat/Qwen3-TTS-0.6B-Base-ONNX",
+      "revision": "177cd39e2ddab0d4d7ce5152a7abc2d382621158"
+    }
+  ]
+}

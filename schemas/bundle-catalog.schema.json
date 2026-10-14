@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/qwen3-onnx-bundles/schema/v1",
+  "title": "Qwen3 ONNX bundle catalog",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "kind", "bundles"],
+  "properties": {
+    "schema": {"const": 1},
+    "kind": {"const": "qwen3-onnx-bundle-catalog"},
+    "bundles": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {"$ref": "#/$defs/bundle"}
+    }
+  },
+  "$defs": {
+    "bundle": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["aliases", "model_type", "layout", "sample_rate", "source", "profiles"],
+      "properties": {
+        "aliases": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+        "model_type": {"enum": ["voice_design", "base", "custom_voice"]},
+        "layout": {"type": "string", "minLength": 1},
+        "sample_rate": {"type": "integer", "minimum": 8000},
+        "source": {"$ref": "#/$defs/source"},
+        "profiles": {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": {"$ref": "#/$defs/profile"}
+        }
+      }
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["provider", "repository", "revision", "license"],
+      "properties": {
+        "provider": {"const": "huggingface"},
+        "repository": {"type": "string", "pattern": "^[^/]+/[^/]+$"},
+        "revision": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+        "license": {"type": "string", "minLength": 1}
+      }
+    },
+    "profile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["include"],
+      "properties": {
+        "include": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}}
+      }
+    }
+  }
+}

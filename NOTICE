@@ -1,0 +1,3 @@
+qwen3-onnx-bundles contains repository-authored metadata only. Qwen and WaveKat model weights,
+tokenizers, ONNX exports, names, and other upstream artifacts are not relicensed by this project.
+All catalog entries retain explicit upstream repository and immutable revision provenance.

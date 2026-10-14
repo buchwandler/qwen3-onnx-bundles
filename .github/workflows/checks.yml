@@ -1,0 +1,17 @@
+name: checks
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - run: python scripts/verify_catalog.py
+      - run: |
+          if find . -type f \( -name '*.onnx' -o -name '*.onnx.data' -o -name '*.npy' -o -name '*.wav' \) | grep -q .; then
+            echo 'binary model/audio asset committed to catalog repository' >&2
+            exit 1
+          fi
