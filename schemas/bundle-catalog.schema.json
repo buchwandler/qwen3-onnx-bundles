@@ -1,35 +1,30 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://example.invalid/qwen3-onnx-bundles/schema/v1",
-  "title": "Qwen3 ONNX bundle catalog",
+  "title": "Qwen3 normalized ONNX bundle catalog",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema", "kind", "bundles"],
+  "required": ["schema", "kind", "source", "bundles"],
   "properties": {
     "schema": {"const": 1},
     "kind": {"const": "qwen3-onnx-bundle-catalog"},
+    "source": {"$ref": "#/$defs/catalogSource"},
     "bundles": {
       "type": "object",
-      "minProperties": 1,
+      "minProperties": 2,
+      "maxProperties": 2,
+      "propertyNames": {"enum": ["base-0.6b", "voice-design-1.7b"]},
       "additionalProperties": {"$ref": "#/$defs/bundle"}
     }
   },
   "$defs": {
-    "bundle": {
+    "catalogSource": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["aliases", "model_type", "layout", "sample_rate", "source", "profiles"],
+      "required": ["provider", "bundle_count"],
       "properties": {
-        "aliases": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
-        "model_type": {"enum": ["voice_design", "base", "custom_voice"]},
-        "layout": {"type": "string", "minLength": 1},
-        "sample_rate": {"type": "integer", "minimum": 8000},
-        "source": {"$ref": "#/$defs/source"},
-        "profiles": {
-          "type": "object",
-          "minProperties": 1,
-          "additionalProperties": {"$ref": "#/$defs/profile"}
-        }
+        "provider": {"const": "huggingface"},
+        "bundle_count": {"const": 2}
       }
     },
     "source": {
@@ -38,7 +33,7 @@
       "required": ["provider", "repository", "revision", "license"],
       "properties": {
         "provider": {"const": "huggingface"},
-        "repository": {"type": "string", "pattern": "^[^/]+/[^/]+$"},
+        "repository": {"type": "string", "pattern": "^[^/\\\\\\s]+/[^/\\\\\\s]+$"},
         "revision": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
         "license": {"type": "string", "minLength": 1}
       }
@@ -46,10 +41,84 @@
     "profile": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["include"],
+      "required": ["components"],
       "properties": {
-        "include": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}}
+        "components": {
+          "type": "array",
+          "minItems": 4,
+          "uniqueItems": true,
+          "items": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]*$"}
+        }
       }
+    },
+    "profiles": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["fp32", "int4"],
+      "properties": {
+        "fp32": {"$ref": "#/$defs/profile"},
+        "int4": {"$ref": "#/$defs/profile"}
+      }
+    },
+    "artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["role", "component", "quality", "path", "url", "size", "sha256"],
+      "properties": {
+        "role": {"enum": ["config", "tokenizer", "embedding", "model", "model_data"]},
+        "component": {
+          "anyOf": [
+            {"type": "null"},
+            {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]*$"}
+          ]
+        },
+        "quality": {"anyOf": [{"type": "null"}, {"enum": ["fp32", "int4"]}]},
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^(?!/)(?!.*(?:^|/)(?:\\.|\\.\\.)(?:/|$))(?!.*//)[A-Za-z0-9._/-]+$"
+        },
+        "url": {
+          "type": "string",
+          "pattern": "^https://huggingface\\.co/[^/]+/[^/]+/resolve/[0-9a-f]{40}/.+\\?download=true$"
+        },
+        "size": {"type": "integer", "minimum": 1},
+        "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      }
+    },
+    "bundle": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "aliases", "layout", "model_type", "sample_rate", "source", "profiles", "artifacts"],
+      "properties": {
+        "id": {"enum": ["base-0.6b", "voice-design-1.7b"]},
+        "aliases": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]*$"}
+        },
+        "layout": {"const": "qwen3-wavekat-v1"},
+        "model_type": {"enum": ["base", "voice_design"]},
+        "sample_rate": {"const": 24000},
+        "source": {"$ref": "#/$defs/source"},
+        "profiles": {"$ref": "#/$defs/profiles"},
+        "artifacts": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"$ref": "#/$defs/artifact"}
+        }
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"id": {"const": "base-0.6b"}}, "required": ["id"]},
+          "then": {"properties": {"model_type": {"const": "base"}}}
+        },
+        {
+          "if": {"properties": {"id": {"const": "voice-design-1.7b"}}, "required": ["id"]},
+          "then": {"properties": {"model_type": {"const": "voice_design"}}}
+        }
+      ]
     }
   }
 }

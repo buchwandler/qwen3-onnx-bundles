@@ -1,6 +1,6 @@
 # qwen3-onnx-bundles
 
-Catalog-only companion repository for `qwen3synth`. It contains normalized Qwen3-TTS ONNX bundle metadata and no model weights, Python package, downloader, inference runtime, or `src/` tree.
+Catalog-only companion repository for the OnnxVoice Qwen3 runtime and Qwen3Synth frontend. It contains normalized Qwen3-TTS ONNX bundle metadata and no model weights, Python package, downloader, inference runtime, or `src/` tree.
 
 ## MVP entries
 
@@ -9,7 +9,7 @@ Catalog-only companion repository for `qwen3synth`. It contains normalized Qwen3
 - Profiles: `int4`, `fp32`.
 - Layout ABI: `qwen3-wavekat-v1`.
 
-The MVP catalog intentionally uses **pinned upstream revisions plus include patterns** rather than pretending that unverified checksums have already been materialized. `qwen3synth` hashes every downloaded byte into its installation manifest. A production catalog release should replace pattern-only integrity with a fully materialized per-file hash/size snapshot.
+The normalized catalog lists each selected artifact with its role, component, quality, source path, immutable-revision URL, byte size, and SHA-256, including ONNX external-data files. `python scripts/verify_catalog.py` checks the complete inventory and provenance offline; OnnxVoice owns download-time integrity verification.
 
 ## Validate
 
@@ -21,10 +21,11 @@ python scripts/verify_catalog.py
 
 This repository is data, not a PyPI distribution. There is therefore no hard-coded Python package version. Catalog compatibility is the integer `schema` field; repository release versions are Git tags. Consumers should pin a Git commit or release tag. This keeps versioning dynamic at the repository level and avoids a duplicated version constant.
 
-## Use with qwen3synth
+## Use with OnnxVoice and Qwen3Synth
 
-When hosted, pass the raw catalog URL:
+OnnxVoice consumes this normalized catalog and owns bundle acquisition, integrity checks, managed installation, providers, graph validation, and inference. Qwen3Synth uses OnnxVoice for the model runtime while retaining its tokenizer, chat templates, WAV handling, profiles, and user-facing synthesis API. See the [OnnxVoice Qwen3 contract](https://github.com/buchwandler/onnxvoice/blob/main/docs/systems/qwen3.md).
 
 ```bash
+onnxvoice install qwen3:base-0.6b --quality int4
 qwen3synth models install base-0.6b --quality int4 --catalog https://.../catalog/bundles.json
 ```
