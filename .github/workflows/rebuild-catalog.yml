@@ -1,0 +1,22 @@
+name: qwen3-catalog-rebuild
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  rebuild:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install "onnxvoice==0.2.8"
+      - run: >
+          onnxvoice catalog qwen3 build
+          --output /tmp/qwen3-bundles.json
+          --source-output /tmp/qwen3-source.json
+      - run: cmp /tmp/qwen3-bundles.json catalog/bundles.json
+      - run: cmp /tmp/qwen3-source.json catalog/source.json

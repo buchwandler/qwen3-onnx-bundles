@@ -11,7 +11,19 @@ jobs:
         with: {python-version: "3.12"}
       - run: python scripts/verify_catalog.py
       - run: |
-          if find . -type f \( -name '*.onnx' -o -name '*.onnx.data' -o -name '*.npy' -o -name '*.wav' \) | grep -q .; then
+          if find . -type f \( -name '*.onnx' -o -name '*.onnx.data' -o -name '*.npy' -o -name '*.wav' -o -name '*.npz' -o -name '*.pt' -o -name '*.pth' -o -name '*.safetensors' -o -name '*.bin' -o -name '*.zip' -o -name '*.tar' -o -name '*.tar.gz' \) | grep -q .; then
             echo 'binary model/audio asset committed to catalog repository' >&2
             exit 1
           fi
+  consumer:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install "onnxvoice==0.2.8"
+      - run: >
+          onnxvoice catalog qwen3 verify
+          --catalog catalog/bundles.json
+          --source catalog/source.json

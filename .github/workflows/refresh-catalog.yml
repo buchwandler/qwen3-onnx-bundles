@@ -1,16 +1,19 @@
-name: refresh-catalog
+name: qwen3-upstream-drift
 on:
   workflow_dispatch:
   schedule:
     - cron: "37 4 * * 1"
+
 permissions:
   contents: read
+
 jobs:
   check-upstream:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: |
-          echo "MVP refresh is review-only. Resolve current upstream SHAs, update catalog/source JSON,"
-          echo "then materialize per-file hashes before promoting a production catalog release."
-          python scripts/verify_catalog.py
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python scripts/verify_catalog.py
+      - run: python scripts/check_upstream_drift.py
